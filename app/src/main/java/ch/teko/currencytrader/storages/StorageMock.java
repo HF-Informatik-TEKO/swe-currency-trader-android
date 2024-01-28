@@ -11,7 +11,7 @@ import ch.teko.currencytrader.models.Currency;
 import ch.teko.currencytrader.models.Money;
 import ch.teko.currencytrader.models.Trade;
 
-public class StorageMock implements IStorageService<Trade>, Parcelable {
+public class StorageMock implements IStorageService<Trade> {
     private ArrayList<Trade> storage = new ArrayList<>();
 
     @Override
@@ -43,15 +43,5 @@ public class StorageMock implements IStorageService<Trade>, Parcelable {
     public void addMockData() {
         storage.add(new Trade("Minnie Mouse", new Money(100, Currency.CHF), new Money(100, Currency.USD)));
         storage.add(new Trade("Chuck Norris", new Money(9_999, Currency.USD), new Money(8_888.8, Currency.EUR)));
-    }
-
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(@NonNull Parcel dest, int flags) {
-
     }
 }
