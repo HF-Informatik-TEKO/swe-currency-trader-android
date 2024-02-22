@@ -29,7 +29,6 @@ public class StorageMock implements IStorageService<Trade> {
         storage.remove(old);
         storage.add(update);
     }
-
     @Override
     public Trade getItem(int pos) {
         return storage.get(pos);
