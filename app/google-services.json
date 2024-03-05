@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "449417948610",
+    "project_id": "teko2024sse",
+    "storage_bucket": "teko2024sse.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:449417948610:android:506803f14491ad5f6e3a5b",
+        "android_client_info": {
+          "package_name": "ch.teko.currencytrader"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAfLEAkYCd0zcMnaYwcEDDIqOaDBYxO5x0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
