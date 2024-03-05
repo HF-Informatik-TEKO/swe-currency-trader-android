@@ -17,6 +17,7 @@ import ch.teko.currencytrader.exchange.Exchange;
 import ch.teko.currencytrader.exchange.IExchange;
 import ch.teko.currencytrader.models.Trade;
 import ch.teko.currencytrader.storages.IStorageService;
+import ch.teko.currencytrader.storages.StorageFirebase;
 import ch.teko.currencytrader.storages.StorageMock;
 
 import com.google.android.gms.tasks.Continuation;
@@ -41,12 +42,25 @@ import com.google.firebase.storage.UploadTask;
 
 public class Controller {
     public static IStorageService<Trade> storage = getFirebaseFirestore();
-    public static IExchange exchange = new CurrencyApiExchange();
-    //public static FirebaseStorage storage2 = FirebaseStorage.getInstance();
-    public static FirebaseFirestore db;
-    private static final String TAG = "TradeUploader";
+    public static IExchange exchange = new Exchange();
+    public static OrderList CurrentListReference;
+    public static void setOrderListReference(OrderList _orderList)
+    {
+        CurrentListReference = _orderList;
+    }
+    public static void updateListActivity()
+    {
+        CurrentListReference.RecreateArrayadapter();
+    }
+    //public static IExchange exchange = new CurrencyApiExchange();
 
-    private static final String collectionName  = "trades";
+
+
+    //public static FirebaseStorage storage2 = FirebaseStorage.getInstance();
+    //public static FirebaseFirestore db;
+    //private static final String TAG = "TradeUploader";
+
+    //private static final String collectionName  = "trades";
 
     public static List<String> storageToList() {
         return storage.getAllItems().stream()
@@ -61,7 +75,9 @@ public class Controller {
     }
 
     private static IStorageService getFirebaseFirestore(){
-
+        StorageFirebase firebaseStorage = new StorageFirebase();
+        return firebaseStorage;
+        /*
         db = FirebaseFirestore.getInstance();
         StorageMock mock = new StorageMock();
         if(false)
@@ -81,8 +97,9 @@ public class Controller {
         //return database;
         //uploadTradesToFirebase(mock.getAllItems());
         return mock;
+        */
     }
-
+/*
     private static void getDataAndFillStorage(StorageMock mock) {
         db.collection(collectionName)
                 .get()
@@ -172,5 +189,5 @@ public class Controller {
                         }
                     }
                 });
-    }
+    }*/
 }

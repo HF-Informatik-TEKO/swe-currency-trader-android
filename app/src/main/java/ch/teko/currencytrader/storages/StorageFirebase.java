@@ -1,26 +1,59 @@
 package ch.teko.currencytrader.storages;
 
-import android.os.Parcel;
-import android.os.Parcelable;
+import android.util.Log;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 
 import androidx.annotation.NonNull;
 
-import java.util.ArrayList;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import ch.teko.currencytrader.Controller;
+import ch.teko.currencytrader.R;
 import ch.teko.currencytrader.models.Currency;
 import ch.teko.currencytrader.models.Money;
 import ch.teko.currencytrader.models.Trade;
 
-public class StorageMock implements IStorageService<Trade> {
+public class StorageFirebase implements IStorageService<Trade> {
+    public StorageFirebase()
+    {
+        db = FirebaseFirestore.getInstance();
+        getDataAndFillStorage();
+        /*if (storage.size() == 0)//doesnt work, because it gets filled async. its always empty here
+        {
+            addMockData();
+            uploadTradesToFirebase(getAllItems());
+        }*/
+    }
+    public FirebaseFirestore db;
+    private final String TAG = "TradeUploader";
+
+    private final String collectionName  = "trades";
+
     private ArrayList<Trade> storage = new ArrayList<>();
 
     @Override
     public void addItem(Trade item) {
         storage.add(item);
+        uploadTrade(item);
     }
 
     @Override
     public void removeItem(int pos) {
+        Trade item = storage.get(pos);
+        deleteTradeFromFirebase(item.id);
         storage.remove(pos);
     }
 
@@ -43,4 +76,170 @@ public class StorageMock implements IStorageService<Trade> {
         storage.add(new Trade("Minnie Mouse", new Money(100, Currency.CHF), new Money(100, Currency.USD)));
         storage.add(new Trade("Chuck Norris", new Money(9_999, Currency.USD), new Money(8_888.8, Currency.EUR)));
     }
+
+
+    /*private IStorageService getFirebaseFirestore(){
+
+        db = FirebaseFirestore.getInstance();
+        StorageMock mock = new StorageMock();
+        if(false)
+        {
+            getDataAndFillStorage();
+        }
+        else
+        {
+            mock.addMockData();
+            uploadTradesToFirebase(mock.getAllItems());
+        }
+
+        // mock.addMockData();
+
+
+        //FirebaseFirestore database = FirebaseFirestore.getInstance();
+        //return database;
+        //uploadTradesToFirebase(mock.getAllItems());
+        return mock;
+    }*/
+
+    private void getDataAndFillStorage() {
+        db.collection(collectionName)
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            for (QueryDocumentSnapshot document : task.getResult()) {
+                                try {
+                                    Trade trade = document.toObject(Trade.class);
+                                    storage.add(trade);
+                                    Log.d(TAG, "Trade added to storage: " + trade.toString());
+                                    Controller.updateListActivity();
+                                }catch (Exception e)
+                                {
+                                    System.out.println(e.toString());
+                                }
+
+                            }
+                        } else {
+                            Log.w(TAG, "Error getting documents.", task.getException());
+                        }
+                    }
+                });
+    }
+
+    public void uploadTradesToFirebase(ArrayList<Trade> storagevar) {
+        //ArrayList<Trade>  storagevar = storage.getAllItems();
+
+        for (Trade trade : storagevar) {
+            uploadTrade(trade);
+        }
+    }
+    private void uploadTrade(Trade trade) {
+        db.collection(collectionName)
+                .add(trade)
+                .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                    @Override
+                    public void onSuccess(DocumentReference documentReference) {
+                        Log.d(TAG, "DocumentSnapshot added with ID: " + documentReference.getId());
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w(TAG, "Error adding document", e);
+                    }
+                });
+    }
+    private void postValue()
+    {
+        // Create a new user with a first and last name
+        Map<String, Object> user = new HashMap<>();
+        user.put("first", "Ada");
+        user.put("last", "Lovelace");
+        user.put("born", 1815);
+
+        // Add a new document with a generated ID
+        db.collection(collectionName)
+                .add(user)
+                .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                    @Override
+                    public void onSuccess(DocumentReference documentReference) {
+                        Log.d(TAG, "DocumentSnapshot added with ID: " + documentReference.getId());
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w(TAG, "Error adding document", e);
+                    }
+                });
+    }
+
+    private void getData()
+    {
+        db.collection(collectionName)
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            for (QueryDocumentSnapshot document : task.getResult()) {
+                                Log.d(TAG, document.getId() + " => " + document.getData());
+                            }
+                        } else {
+                            Log.w(TAG, "Error getting documents.", task.getException());
+                        }
+                    }
+                });
+    }
+
+   /* private void deleteTradeFromFirebase(String tradeId) {
+        db.collection(collectionName)
+                .document(tradeId)
+                .delete()
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Log.d(TAG, "Trade deleted from Firebase with ID: " + tradeId);
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w(TAG, "Error deleting trade from Firebase with ID: " + tradeId, e);
+                    }
+                });
+    }*/
+   private void deleteTradeFromFirebase(String tradeId) {
+       // Query to find the document with the specified field value
+       db.collection(collectionName)
+               .whereEqualTo("id", tradeId)
+               .get()
+               .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                   @Override
+                   public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                       if (task.isSuccessful()) {
+                           for (QueryDocumentSnapshot document : task.getResult()) {
+                               // Delete the document with the matching field value
+                               document.getReference().delete()
+                                       .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                           @Override
+                                           public void onSuccess(Void aVoid) {
+                                               Log.d(TAG, "Trade deleted from Firebase with ID: " + tradeId);
+                                           }
+                                       })
+                                       .addOnFailureListener(new OnFailureListener() {
+                                           @Override
+                                           public void onFailure(@NonNull Exception e) {
+                                               Log.w(TAG, "Error deleting trade from Firebase with ID: " + tradeId, e);
+                                           }
+                                       });
+                           }
+                       } else {
+                           Log.w(TAG, "Error getting documents.", task.getException());
+                       }
+                   }
+               });
+   }
+
 }

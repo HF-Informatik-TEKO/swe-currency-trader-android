@@ -13,15 +13,15 @@ import java.util.List;
 import ch.teko.currencytrader.models.Trade;
 
 public class OrderList extends AppCompatActivity {
-
+    private ArrayAdapter<String> adapter;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_list_view);
-
+        Controller.setOrderListReference(this);
         ListView listView = findViewById(R.id.listView_items);
         List<String> data = Controller.storageToList();
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, data);
+        adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, data);
         listView.setAdapter(adapter);
 
 
@@ -50,5 +50,13 @@ public class OrderList extends AppCompatActivity {
             Intent intent = new Intent(this, SingleView.class);
             startActivity(intent);
         });
+    }
+
+    public void RecreateArrayadapter()
+    {
+        ListView listView = findViewById(R.id.listView_items);
+        List<String> data = Controller.storageToList();
+        adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, data);
+        listView.setAdapter(adapter);
     }
 }
