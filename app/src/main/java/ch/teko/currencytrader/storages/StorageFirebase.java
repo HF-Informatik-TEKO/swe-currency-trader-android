@@ -31,11 +31,6 @@ public class StorageFirebase implements IStorageService<Trade> {
     {
         db = FirebaseFirestore.getInstance();
         getDataAndFillStorage();
-        /*if (storage.size() == 0)//doesnt work, because it gets filled async. its always empty here
-        {
-            addMockData();
-            uploadTradesToFirebase(getAllItems());
-        }*/
     }
     public FirebaseFirestore db;
     private final String TAG = "TradeUploader";
@@ -61,6 +56,7 @@ public class StorageFirebase implements IStorageService<Trade> {
     public void updateItem(Trade old, Trade update) {
         storage.remove(old);
         storage.add(update);
+        updateTradeInFirebase(old, update);
     }
     @Override
     public Trade getItem(int pos) {
@@ -78,28 +74,6 @@ public class StorageFirebase implements IStorageService<Trade> {
     }
 
 
-    /*private IStorageService getFirebaseFirestore(){
-
-        db = FirebaseFirestore.getInstance();
-        StorageMock mock = new StorageMock();
-        if(false)
-        {
-            getDataAndFillStorage();
-        }
-        else
-        {
-            mock.addMockData();
-            uploadTradesToFirebase(mock.getAllItems());
-        }
-
-        // mock.addMockData();
-
-
-        //FirebaseFirestore database = FirebaseFirestore.getInstance();
-        //return database;
-        //uploadTradesToFirebase(mock.getAllItems());
-        return mock;
-    }*/
 
     private void getDataAndFillStorage() {
         db.collection(collectionName)
@@ -127,13 +101,6 @@ public class StorageFirebase implements IStorageService<Trade> {
                 });
     }
 
-    public void uploadTradesToFirebase(ArrayList<Trade> storagevar) {
-        //ArrayList<Trade>  storagevar = storage.getAllItems();
-
-        for (Trade trade : storagevar) {
-            uploadTrade(trade);
-        }
-    }
     private void uploadTrade(Trade trade) {
         db.collection(collectionName)
                 .add(trade)
@@ -150,66 +117,8 @@ public class StorageFirebase implements IStorageService<Trade> {
                     }
                 });
     }
-    private void postValue()
-    {
-        // Create a new user with a first and last name
-        Map<String, Object> user = new HashMap<>();
-        user.put("first", "Ada");
-        user.put("last", "Lovelace");
-        user.put("born", 1815);
 
-        // Add a new document with a generated ID
-        db.collection(collectionName)
-                .add(user)
-                .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
-                    @Override
-                    public void onSuccess(DocumentReference documentReference) {
-                        Log.d(TAG, "DocumentSnapshot added with ID: " + documentReference.getId());
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Log.w(TAG, "Error adding document", e);
-                    }
-                });
-    }
 
-    private void getData()
-    {
-        db.collection(collectionName)
-                .get()
-                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        if (task.isSuccessful()) {
-                            for (QueryDocumentSnapshot document : task.getResult()) {
-                                Log.d(TAG, document.getId() + " => " + document.getData());
-                            }
-                        } else {
-                            Log.w(TAG, "Error getting documents.", task.getException());
-                        }
-                    }
-                });
-    }
-
-   /* private void deleteTradeFromFirebase(String tradeId) {
-        db.collection(collectionName)
-                .document(tradeId)
-                .delete()
-                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void aVoid) {
-                        Log.d(TAG, "Trade deleted from Firebase with ID: " + tradeId);
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Log.w(TAG, "Error deleting trade from Firebase with ID: " + tradeId, e);
-                    }
-                });
-    }*/
    private void deleteTradeFromFirebase(String tradeId) {
        // Query to find the document with the specified field value
        db.collection(collectionName)
@@ -241,5 +150,25 @@ public class StorageFirebase implements IStorageService<Trade> {
                    }
                });
    }
+
+    private void updateTradeInFirebase(Trade oldtrade, Trade trade) {
+        // Get the document reference for the specified tradeId
+        DocumentReference tradeRef = db.collection(collectionName).document(oldtrade.id);
+
+        // Update the document with the new data
+        tradeRef.set(trade)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Log.d(TAG, "Trade updated in Firebase with ID: " + trade.id);
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w(TAG, "Error updating trade in Firebase with ID: " + trade.id, e);
+                    }
+                });
+    }
 
 }
