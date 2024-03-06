@@ -28,11 +28,11 @@ public class CurrencyApiRequestTask extends AsyncTask<String, Void, HashMap<Stri
         String[] to = Arrays.stream(params, 1, params.length).toArray(String[]::new);
 
         // Commented out to save requests on limited API.
-        //String urlString = getUrlString(from, to);
-        //String response = performRequest(urlString);
+        String urlString = getUrlString(from, to);
+        String response = performRequest(urlString);
 
         // Response to mock the currency API.
-        String response = "{\"meta\":{\"last_updated_at\":\"2024-02-21T23:59:59Z\"},\"data\":{\"CHF\":{\"code\":\"CHF\",\"value\":0.8792101731},\"EUR\":{\"code\":\"EUR\",\"value\":0.9240101663}}}";
+        //String response = "{\"meta\":{\"last_updated_at\":\"2024-02-21T23:59:59Z\"},\"data\":{\"CHF\":{\"code\":\"CHF\",\"value\":0.8792101731},\"EUR\":{\"code\":\"EUR\",\"value\":0.9240101663}}}";
 
         HashMap<String, Double> parsedResponse = parseResponse(response);
         parsedResponse.put(from, 1.0d);

@@ -17,16 +17,12 @@ public class CurrencyApiExchange implements IExchange {
 
     @Override
     public double calculateTarget(Trade trade) {
-        return trade.source.amount * getRate(trade.source.currency, trade.target.currency);
+        return trade.source.amount /  exchange.get(trade.source.currency) * exchange.get(trade.target.currency);
     }
 
     @Override
     public double calculateSource(Trade trade) {
-        return trade.target.amount * getRate(trade.target.currency, trade.source.currency);
-    }
-
-    private double getRate(Currency from, Currency to) {
-        return exchange.get(from) * exchange.get(to);
+        return trade.target.amount /  exchange.get(trade.source.currency) * exchange.get(trade.target.currency);
     }
 
     private HashMap<Currency, Double> getDefaultExchangeValues() {
